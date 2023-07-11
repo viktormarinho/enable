@@ -1,0 +1,11 @@
+{
+  "name": "enable",
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "cargo build && pnpm --filter client build"
+  },
+  "author": "viktormarinho"
+}
