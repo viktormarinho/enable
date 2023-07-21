@@ -20,6 +20,7 @@
     "vite": "^4.4.0"
   },
   "dependencies": {
+    "svelte-notifications": "^0.9.98",
     "svelte-spa-router": "^3.3.0"
   }
 }

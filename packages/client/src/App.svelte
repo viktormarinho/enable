@@ -1,12 +1,9 @@
-<script lang=ts>
-  import Router from 'svelte-spa-router';
-  import Login from './lib/routes/Login.svelte';
-  import Oi from './lib/routes/Oi.svelte';
-  
-  const routes = {
-    '/': Login,
-    '/zimbas': Oi
-  };
+<script lang="ts">
+  import Notifications from 'svelte-notifications';
+  import Routes from './Routes.svelte';
 </script>
 
-<Router {routes} />
+
+<Notifications>
+  <Routes></Routes>
+</Notifications>

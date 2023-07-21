@@ -8,23 +8,81 @@
   import Login from '../icons/Login.svelte';
   import Password from '../icons/Password.svelte';
   import Admin from '../icons/Admin.svelte';
+  import { onMount } from 'svelte';
   import { push } from 'svelte-spa-router';
+  import { errors } from '../errors';
+  import ErrorMessage from '../components/ErrorMessage.svelte';
+  import { getNotificationsContext } from 'svelte-notifications';
+
+  const { addNotification } = getNotificationsContext();
 
   const loginData = {
     email: '',
     password: '',
   };
+  let loginErrors = errors.make(loginData);
 
   const registerData = {
     email: '',
     password: '',
-    confirmPassword: '',
+    passwordConfirm: '',
+  };
+  let registerErrors = errors.make(registerData);
+
+  let firstTime = true;
+  onMount(async () => {
+    const res = await fetch('/api/auth/first-time');
+    const { isFirstTime } = await res.json();
+    firstTime = isFirstTime;
+  });
+
+  let loading = false;
+
+  const login = async () => {
+    loading = true;
+    loginErrors = errors.reset(loginErrors);
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    if (res.status === 200) {
+      push('/admin');
+    } else {
+      loginErrors.email = 'Email ou senha incorretos';
+      loginErrors.password = 'Email ou senha incorretos';
+    }
+    loading = false;
   };
 
-  let erro = '';
+  const register = async () => {
+    loading = true;
+    registerErrors = errors.reset(registerErrors);
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(registerData),
+    });
 
-  const firstTime = true;
-
+    if (res.ok) {
+      push('/admin');
+      addNotification({
+        type: 'success',
+        position: 'top-right',
+        removeAfter: 3000,
+        text: 'Account registered with success.',
+        id: 'account-created'
+      });
+    } else { 
+      registerErrors = errors.apply(registerErrors, await res.json());
+    }
+    loading = false;
+  };
 </script>
 
 <main>
@@ -35,31 +93,36 @@
 
   {#if !firstTime}
     <div class="form">
-      <Input bind:value={loginData.email} placeholder="Email" type="email">
+      <p>Welcome back to the enable admin dashboard.</p>
+      <Input bind:value={loginData.email} placeholder="Email" type="email" error={loginErrors.email}>
         <Email />
       </Input>
-      <Input bind:value={loginData.password} placeholder="Password" type="password">
+      <Input bind:value={loginData.password} placeholder="Password" type="password" error={loginErrors.password}>
         <Password />
       </Input>
-      <Button text="Login">
+      {#if loginErrors.general}
+        <ErrorMessage message={loginErrors.general} />
+      {/if}
+      <Button loading={loading} text="Login" on:click={login}>
         <Login />
       </Button>
     </div>
   {:else}
     <div class="form">
       <p>Hello! Since this is your first time here, you need to create an admin account.</p>
-      <Input bind:value={registerData.email} placeholder="Email" type="email" error={erro}>
+      <Input bind:value={registerData.email} placeholder="Email" type="email" error={registerErrors.email}>
         <Email />
       </Input>
-      <Input bind:value={registerData.password} placeholder="Password" type="password" error={erro}>
+      <Input bind:value={registerData.password} placeholder="Password" type="password" error={registerErrors.password}>
         <Password />
       </Input>
-      <Input bind:value={registerData.confirmPassword} placeholder="Confirm password" type="password" help="Use at least 8 characters" error={erro}>
+      <Input bind:value={registerData.passwordConfirm} placeholder="Confirm password" type="password" help="Use at least 8 characters" error={registerErrors.passwordConfirm}>
         <Password />
       </Input>
-      <Button text="Register" on:click={() => {
-            erro = "Email zaralhado";
-        }}>
+      {#if registerErrors.general}
+        <ErrorMessage message={registerErrors.general} />
+      {/if}
+      <Button loading={loading} text="Register" on:click={register}>
         <Admin />
       </Button>
     </div>
@@ -92,7 +155,7 @@
     padding-bottom: 1rem;
     gap: 1rem;
     width: 100%;
-    max-width: 420px;
+    width: 420px;
   }
 
   .form > p {
