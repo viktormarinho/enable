@@ -2,19 +2,16 @@ use argon2::password_hash::SaltString;
 use axum::{
     extract,
     http::StatusCode,
-    response::IntoResponse,
+    response::{IntoResponse, Redirect},
     routing::{get, post},
     Extension, Json, Router,
 };
-use axum_sessions::{
-    async_session::MemoryStore,
-    extractors::{ReadableSession, WritableSession},
-    SessionLayer,
-};
-use rand::Rng;
+use axum_sessions::extractors::{ReadableSession, WritableSession};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::SqlitePool;
+
+use crate::users::{self, try_load_user};
 
 #[derive(Deserialize)]
 struct LoginDto {
@@ -25,14 +22,6 @@ struct LoginDto {
 #[derive(Serialize)]
 struct LoginResponse {
     msg: String,
-}
-
-fn generate_session_token() -> String {
-    rand::thread_rng()
-        .sample_iter(&rand::distributions::Alphanumeric)
-        .take(128)
-        .map(char::from)
-        .collect()
 }
 
 enum LoginError {
@@ -188,47 +177,21 @@ async fn register(
     ))
 }
 
+async fn logout(mut session: WritableSession) -> Redirect{
+    session.destroy();
+    Redirect::to("/")
+}
+
 #[derive(Serialize)]
 struct MeResponse {
     email: String,
 }
 
-enum MeError {
-    SessionDoesNotExist,
-    UserDoesNotExist,
-}
-
-impl IntoResponse for MeError {
-    fn into_response(self) -> axum::response::Response {
-        let (status, error_message) = match self {
-            MeError::SessionDoesNotExist => (StatusCode::UNAUTHORIZED, "Session does not exist"),
-            MeError::UserDoesNotExist => (StatusCode::UNAUTHORIZED, "User does not exist"),
-        };
-        let body = Json(json!({ "error": error_message }));
-        (status, body).into_response()
-    }
-}
-
 async fn me(
     session: ReadableSession,
     Extension(pool): Extension<SqlitePool>,
-) -> Result<(StatusCode, Json<MeResponse>), MeError> {
-    let user_id = session.get::<i64>("user_id");
-
-    if user_id.is_none() {
-        return Err(MeError::SessionDoesNotExist);
-    }
-
-    let user = sqlx::query!("SELECT * FROM user WHERE id = ?", user_id)
-        .fetch_optional(&pool)
-        .await
-        .unwrap();
-
-    if user.is_none() {
-        return Err(MeError::UserDoesNotExist);
-    }
-
-    let user = user.unwrap();
+) -> Result<(StatusCode, Json<MeResponse>), users::LoadUserError> {
+    let user = try_load_user(session, &pool).await?;
 
     Ok((StatusCode::OK, Json(MeResponse { email: user.email })))
 }
@@ -251,14 +214,10 @@ async fn first_time(Extension(pool): Extension<SqlitePool>) -> Json<FirstTimeRes
 }
 
 pub fn auth() -> Router {
-    let store = MemoryStore::new();
-    let secret = rand::thread_rng().gen::<[u8; 128]>();
-    let session_layer = SessionLayer::new(store, &secret);
-
     Router::new()
         .route("/me", get(me))
         .route("/first-time", get(first_time))
         .route("/login", post(login))
+        .route("/logout", get(logout))
         .route("/register", post(register))
-        .layer(session_layer)
 }

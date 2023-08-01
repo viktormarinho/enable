@@ -1,9 +1,13 @@
-<script lang=ts>
+<script lang="ts">
   import Router, { replace } from "svelte-spa-router";
   import wrap from "svelte-spa-router/wrap";
   import Login from "./lib/routes/Login.svelte";
   import { SvelteComponent } from "svelte";
-  import { getNotificationsContext } from 'svelte-notifications';
+  import { getNotificationsContext } from "svelte-notifications";
+
+  type LazyLoadedPage = Promise<{
+    default: typeof SvelteComponent;
+  }>;
 
   const conditions = [
     async () => {
@@ -16,9 +20,12 @@
     "/": Login,
     "/admin": wrap({
       asyncComponent: () =>
-        import("./lib/routes/Admin.svelte") as Promise<{
-          default: typeof SvelteComponent;
-        }>,
+        import("./lib/routes/Admin.svelte") as LazyLoadedPage,
+      conditions,
+    }),
+    "/admin/project/:id": wrap({
+      asyncComponent: () =>
+        import("./lib/routes/Project.svelte") as LazyLoadedPage,
       conditions,
     }),
   };
@@ -31,7 +38,7 @@
       position: "top-right",
       removeAfter: 3000,
       text: "You must be logged in to access this page. Redirecting to login...",
-      id: "login-required"
+      id: "login-required",
     });
   }
 </script>

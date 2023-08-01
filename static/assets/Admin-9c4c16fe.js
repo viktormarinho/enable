@@ -1,1 +1,0 @@
-import{S as o,i,s as r,e as c,a as l,n,d as f}from"./index-769051a7.js";function m(s){let e;return{c(){e=c("h1"),e.textContent="Admin"},m(t,a){l(t,e,a)},p:n,i:n,o:n,d(t){t&&f(e)}}}function u(s){return console.log("hi"),[]}class p extends o{constructor(e){super(),i(this,e,u,m,r,{})}}export{p as default};

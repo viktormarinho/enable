@@ -1,6 +1,11 @@
+<script lang=ts>
+  export let width: string = '64';
+  export let height: string = '64'; 
+</script>
+
 <svg
-  width="64"
-  height="64"
+  width={width}
+  height={height}
   viewBox="0 0 175 175"
   fill="none"
   xmlns="http://www.w3.org/2000/svg"

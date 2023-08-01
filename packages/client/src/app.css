@@ -2,7 +2,9 @@
   --main-content: #213547;
   --sec-content: #5c6a6f;
   --hover-bg: rgb(235, 235, 235);
+  --hover-bg-darker: rgb(100, 225, 225);
   --error: rgb(255, 104, 104);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -25,8 +27,6 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
 }
 
@@ -39,13 +39,48 @@ h1 {
   padding: 2em;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
 .hidden {
   display: none;
+}
+
+.portal {
+  position: absolute;
+  animation: fadein 200ms linear;
+  z-index: 5;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadein {
+  from {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  to {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.portal-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.page {
+  margin: auto;
+  width: 1024px;
+}
+
+.page-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+.page-header > h1 {
+  font-size: 2.2em;
 }
