@@ -31,7 +31,8 @@
         on:click_outside={() => (open = false)}
       >
         <span>{email}</span>
-        <a href="/api/auth/logout" class="logout hover">Logout</a>
+        <a href="#/admin/settings" class="link hover">Settings</a>
+        <a href="/api/auth/logout" class="link hover">Logout</a>
       </div>
     {/key}
   </div>
@@ -76,7 +77,7 @@
   .open > * {
     padding: 6px;
   }
-  .logout {
+  .link {
     border-radius: 8px;
     cursor: pointer;
     color: var(--sec-content);

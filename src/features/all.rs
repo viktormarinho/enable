@@ -7,9 +7,9 @@ use crate::projects::create::Project;
 
 #[derive(Serialize)]
 pub struct Feature {
-    id: String,
-    active: bool,
-    project_id: i64,
+    pub id: String,
+    pub active: bool,
+    pub project_id: i64,
 }
 
 #[derive(Serialize)]

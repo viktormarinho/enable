@@ -29,6 +29,8 @@ async fn main() {
 
     let api = Router::new()
         .nest_service("/auth", enable::auth::auth())
+        .nest_service("/credentials", enable::external::credentials::credentials())
+        .nest_service("/feature", enable::external::features::features())
         .nest_service("/features", enable::features::features())
         .nest_service("/projects", enable::projects::projects())
         .nest_service("/health", enable::health::health())

@@ -28,6 +28,8 @@
 body {
   margin: 0;
   min-width: 320px;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -83,4 +85,21 @@ h1 {
 }
 .page-header > h1 {
   font-size: 2.2em;
+}
+
+.btn-secondary {
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  background-color: var(--hover-bg);
+}
+.btn-secondary > span {
+  color: var(--sec-content);
+  font-size: 16px;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 500;
 }

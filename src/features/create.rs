@@ -36,12 +36,12 @@ pub enum CreateFeatureErr {
 
 impl IntoResponse for CreateFeatureErr {
     fn into_response(self) -> axum::response::Response {
-        let (status, error_message) = match self {
-            CreateFeatureErr::FeatureAlreadyExists => (StatusCode::BAD_REQUEST, "Feature already exists"),
-            CreateFeatureErr::ProjectDoesNotExist => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error: The project does not exist")
+        let (status, error_message, fields) = match self {
+            CreateFeatureErr::FeatureAlreadyExists => (StatusCode::BAD_REQUEST, "Feature already exists", vec!["name"]),
+            CreateFeatureErr::ProjectDoesNotExist => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error: The project does not exist", vec![])
         };
         let body = Json(json!({
-            "error": error_message
+            "error": error_message, "fields": fields
         }));
         (status, body).into_response()
     }

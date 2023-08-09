@@ -28,6 +28,11 @@
         import("./lib/routes/Project.svelte") as LazyLoadedPage,
       conditions,
     }),
+    "/admin/settings": wrap({
+      asyncComponent: () => 
+        import("./lib/routes/Settings.svelte") as LazyLoadedPage,
+      conditions
+    })
   };
   const { addNotification } = getNotificationsContext();
 

@@ -44,12 +44,14 @@ pub async fn all(
 pub async fn fetch_all_projects(pool: &SqlitePool) -> Result<Vec<Project>, AllProjectsErr> {
     let result = sqlx::query_as!(
         Project,
-        "SELECT 
-            *,
-            (select COUNT(id) FROM feature f WHERE f.project_id = p.id) as feature_count
+        r#"SELECT 
+            id,
+            name,
+            user_id,
+            (select COUNT(id) FROM feature f WHERE f.project_id = p.id) as "feature_count: _"
         FROM 
             project p
-        "
+        "#
     )
     .fetch_all(pool)
     .await;

@@ -18,7 +18,8 @@
   async function openModal() {
     open = true;
   }
-  async function createProject() {
+  async function createProject(e: Event) {
+    e.preventDefault();
     loading = true;
     const res = await fetch('/api/projects', {
         method: "POST",
@@ -41,7 +42,7 @@
   }
 </script>
 
-<button on:click={openModal}>
+<button class="btn-secondary" on:click={openModal}>
   <span> Create project + </span>
 </button>
 {#if open}
@@ -61,22 +62,6 @@
 {/if}
 
 <style>
-  button {
-    background-color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 8px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: var(--hover-bg);
-  }
-  button > span {
-    color: var(--sec-content);
-    font-size: 16px;
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    font-weight: 500;
-  }
   .open {
     display: block;
     pointer-events: all;

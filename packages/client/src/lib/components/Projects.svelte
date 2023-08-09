@@ -6,7 +6,7 @@
   let projects: {
     id: number;
     name: string;
-    features_count: number;
+    feature_count: number;
   }[] = [];
 
   onMount(async () => {
@@ -23,7 +23,7 @@
       class="project"
     >
       <span><Folder /> {project.name}</span>
-      <span>{project.features_count ?? 0} features</span>
+      <span>{project.feature_count} features</span>
     </button>
   {/each}
 </div>
