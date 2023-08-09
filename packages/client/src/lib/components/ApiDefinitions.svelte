@@ -7,8 +7,10 @@
 
 <div class="defs">
   <div class="tab-controls">
-    <span aria-selected={selectedTab === "rest"} on:click={() => (selectedTab = 'rest')}>REST API</span>
-    <span aria-selected={selectedTab === "ts-sdk"} on:click={() => (selectedTab = 'ts-sdk')}>Typescript SDK</span>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <span role="tab" tabindex="0" aria-selected={selectedTab === "rest"} on:click={() => (selectedTab = 'rest')}>REST API</span>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <span role="tab" tabindex="0" aria-selected={selectedTab === "ts-sdk"} on:click={() => (selectedTab = 'ts-sdk')}>Typescript SDK</span>
   </div>
   {#if selectedTab === "rest"}
   <div class="api-type-container">
