@@ -103,14 +103,6 @@
     flex-direction: column;
     gap: 4px;
   }
-  .tag {
-    border-radius: 8px;
-    padding: 8px;
-    text-transform: uppercase;
-    background-color: rgb(189, 220, 252);
-    color: dodgerblue;
-    font-size: 12px;
-  }
   .container {
     display: flex;
     align-items: center;
