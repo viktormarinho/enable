@@ -1,11 +1,16 @@
 use std::net::SocketAddr;
 
 use argon2::password_hash::SaltString;
-use axum::{Router, Extension};
+use axum::{
+    http::{header, StatusCode, Uri},
+    response::{IntoResponse, Response},
+    routing::get,
+    Extension, Router,
+};
 use axum_sessions::{async_session::MemoryStore, SessionLayer};
 use rand::rngs::OsRng;
 use rand::Rng;
-use tower_http::services::ServeDir;
+use rust_embed::RustEmbed;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -37,7 +42,8 @@ async fn main() {
         .layer(session_layer);
 
     let app = Router::new()
-        .nest_service("/", ServeDir::new("static"))
+        .route("/", get(static_handler))
+        .route("/*file", get(static_handler))
         .nest_service("/api", api)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(Extension(pool))
@@ -56,4 +62,37 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+}
+
+async fn static_handler(uri: Uri) -> impl IntoResponse {
+    let mut path = uri.path().trim_start_matches('/').to_string();
+
+    if path == "/" || path.len() == 0 {
+        path = "index.html".to_string();
+    }
+
+    StaticFile(path)
+}
+
+#[derive(RustEmbed)]
+#[folder = "static/"]
+struct Asset;
+
+pub struct StaticFile<T>(pub T);
+
+impl<T> IntoResponse for StaticFile<T>
+where
+    T: Into<String>,
+{
+    fn into_response(self) -> Response {
+        let path = self.0.into();
+
+        match Asset::get(path.as_str()) {
+            Some(content) => {
+                let mime = mime_guess::from_path(path).first_or_octet_stream();
+                ([(header::CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+            }
+            None => (StatusCode::NOT_FOUND, "404 Not Found").into_response(),
+        }
+    }
 }
