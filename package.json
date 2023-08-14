@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "cargo build && pnpm --filter client build"
+    "build": "cargo build && pnpm --filter client build && pnpm --filter @enable/ts-sdk build"
   },
   "author": "viktormarinho"
 }

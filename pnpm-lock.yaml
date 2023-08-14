@@ -31,7 +31,10 @@ importers:
       vite: 4.4.3
 
   packages/sdk:
-    specifiers: {}
+    specifiers:
+      typescript: ^5.0.2
+    devDependencies:
+      typescript: 5.1.6
 
 packages:
 
