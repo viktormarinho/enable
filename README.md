@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="https://github.com/viktormarinho/enable/blob/main/static/enable.png" alt="Enable" style="height: 100px;" />
+</div>
+
 # Enable
 
 Enable is a portable [feature flag](https://launchdarkly.com/blog/what-are-feature-flags/) (aka feature toggles) service, contained in a single executable file.
