@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::SqlitePool;
 
-use crate::users::{self, try_load_user};
+use crate::{users::{self, try_load_user}, gen};
 
 #[derive(Deserialize)]
 struct LoginDto {
@@ -155,11 +155,13 @@ async fn register(
     }
 
     let password_hash = crate::hash::hash(data.password, &salt).unwrap();
+    let id = gen::id();
 
     let user = sqlx::query!(
-        "INSERT INTO user (email, password_hash) VALUES (?, ?) RETURNING id",
+        "INSERT INTO user (email, password_hash, id) VALUES (?, ?, ?) RETURNING id",
         data.email,
-        password_hash
+        password_hash,
+        id
     )
     .fetch_one(&pool)
     .await

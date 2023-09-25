@@ -21,7 +21,7 @@ pub async fn new(
 
 #[derive(Deserialize)]
 pub struct CreateFeatureDto {
-    pub project_id: i64,
+    pub project_id: String,
     pub name: String,
 }
 

@@ -9,7 +9,7 @@ use crate::projects::create::Project;
 pub struct Feature {
     pub id: String,
     pub active: bool,
-    pub project_id: i64,
+    pub project_id: String,
 }
 
 #[derive(Serialize)]
@@ -37,7 +37,7 @@ impl IntoResponse for AllFeaturesErr {
 
 pub async fn fetch_all_features(
     pool: &SqlitePool,
-    project_id: i64,
+    project_id: &String,
 ) -> Result<Vec<Feature>, AllFeaturesErr> {
     let result = sqlx::query_as!(
         Feature,
@@ -56,9 +56,9 @@ pub async fn fetch_all_features(
 
 pub async fn all(
     Extension(pool): Extension<SqlitePool>,
-    Path(project_id): Path<i64>,
+    Path(project_id): Path<String>,
 ) -> Result<(StatusCode, Json<AllFeaturesResponse>), AllFeaturesErr> {
-    let features = fetch_all_features(&pool, project_id).await?;
+    let features = fetch_all_features(&pool, &project_id).await?;
     let project = sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", project_id)
         .fetch_one(&pool)
         .await
@@ -73,7 +73,7 @@ mod tests {
     async fn fetch_all_features_work() {
         use crate::{db::get_pool, features::all::fetch_all_features};
         let pool = get_pool().await;
-        let features = fetch_all_features(&pool, 0).await;
+        let features = fetch_all_features(&pool, &String::from("kekeke")).await;
         assert!(features.is_ok());
     }
 }

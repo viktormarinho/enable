@@ -29,7 +29,7 @@
         <BackToProjects />
         <header class="page-header">
             <h1>{data.project.name}</h1>
-            <NewFeature projectId={Number(params.id)} projectName={data.project.name} />
+            <NewFeature projectId={params.id} projectName={data.project.name} />
         </header>
         <Features features={data.features}/>
     </div>

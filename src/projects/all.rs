@@ -5,9 +5,9 @@ use sqlx::SqlitePool;
 
 #[derive(Serialize)]
 pub struct Project {
-    pub id: Option<i64>,
+    pub id: Option<String>,
     pub name: String,
-    pub user_id: i64,
+    pub user_id: String,
     pub feature_count: Option<i32>
 }
 

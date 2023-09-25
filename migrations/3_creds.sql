@@ -1,5 +1,5 @@
 create table if not exists credentials (
-    id integer primary key autoincrement not null,
+    id text primary key not null,
     name text not null,
     token text not null
 )

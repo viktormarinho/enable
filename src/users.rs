@@ -6,7 +6,7 @@ use sqlx::SqlitePool;
 
 #[derive(Serialize, Deserialize)]
 pub struct User {
-    pub id: i64,
+    pub id: String,
     pub email: String,
     password_hash: String
 }
@@ -31,7 +31,7 @@ impl IntoResponse for LoadUserError {
 // Tries to load the current user (works for routes that do not contain the users::require_auth middleware)
 // Returns a error with IntoResponse implemented for easy error bubbling
 pub async fn try_load_user(session: ReadableSession, pool: &SqlitePool) -> Result<User, LoadUserError> {
-    let user_id = match session.get::<i64>("user_id") {
+    let user_id = match session.get::<String>("user_id") {
         None => return Err(LoadUserError::SessionDoesNotExist),
         Some(usr) => usr,
     };
@@ -53,7 +53,7 @@ pub async fn try_load_user(session: ReadableSession, pool: &SqlitePool) -> Resul
 /// This function assumes that the current route uses this middleware and then utilize .unwrap
 /// for convenience. If you want to error check use the users::try_load_user function
 pub async fn load_user(session: ReadableSession, pool: &SqlitePool) -> User {
-    let user_id = session.get::<i64>("user_id").unwrap();
+    let user_id = session.get::<String>("user_id").unwrap();
 
     sqlx::query_as!(User, "SELECT * FROM user WHERE id = ?", user_id)
         .fetch_optional(pool)
@@ -68,7 +68,7 @@ pub async fn require_auth<B>(
     request: Request<B>,
     next: Next<B>,
 ) -> Result<Response, StatusCode> {
-    let user_id = session.get::<i64>("user_id");
+    let user_id = session.get::<String>("user_id");
 
     if user_id.is_none() {
         return Err(StatusCode::UNAUTHORIZED);

@@ -8,3 +8,9 @@ pub mod db;
 pub mod features;
 pub mod projects;
 pub mod external;
+
+pub mod gen {
+    pub fn id() -> String {
+        uuid::Uuid::new_v4().to_string()
+    }
+}

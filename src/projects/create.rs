@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::SqlitePool;
 
-use crate::users::load_user;
+use crate::{users::load_user, gen};
 
 #[derive(Deserialize)]
 pub struct CreateProjectDto {
@@ -13,9 +13,9 @@ pub struct CreateProjectDto {
 
 #[derive(Serialize)]
 pub struct Project {
-    pub id: Option<i64>,
+    pub id: Option<String>,
     pub name: String,
-    pub user_id: i64,
+    pub user_id: String,
 }
 
 #[derive(Serialize)]
@@ -55,11 +55,13 @@ pub async fn new(
 ) -> Result<Json<CreateProjectResponse>, CreateProjectErr> {
     data.validate()?;
     let user = load_user(session, &pool).await;
+    let id = gen::id();
     let project = sqlx::query_as!(
         Project,
-        "INSERT INTO project (name, user_id) VALUES (?, ?) RETURNING *",
+        "INSERT INTO project (name, user_id, id) VALUES (?, ?, ?) RETURNING *",
         data.name,
-        user.id
+        user.id,
+        id
     )
     .fetch_one(&pool)
     .await

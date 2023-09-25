@@ -14,6 +14,12 @@
     const { projects: _projects } = await res.json();
     projects = _projects;
   });
+
+  function resolveLabel(count: number) {
+    if (count === 1) return `1 feature`;
+    if (count === 0) return `no features`;
+    return `${count} features`;
+  }
 </script>
 
 <div class="projects">
@@ -23,7 +29,7 @@
       class="project"
     >
       <span><Folder /> {project.name}</span>
-      <span>{project.feature_count} features</span>
+      <span>{resolveLabel(project.feature_count)}</span>
     </button>
   {/each}
 </div>

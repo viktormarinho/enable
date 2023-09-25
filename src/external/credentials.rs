@@ -3,17 +3,17 @@ use rand::{distributions::Uniform, Rng};
 use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 
-use crate::users;
+use crate::{users, gen};
 
 #[derive(Serialize)]
 pub struct TokenRemovalError(String);
 
 #[derive(Serialize)]
 pub struct DeleteTokenResponse {
-    pub deleted_id: i64
+    pub deleted_id: String
 }
 
-async fn remove_external_token(pool: &SqlitePool, id: i64) -> Result<i64, TokenRemovalError> {
+async fn remove_external_token(pool: &SqlitePool, id: &String) -> Result<String, TokenRemovalError> {
     let result = sqlx::query!("DELETE FROM credentials WHERE id = ?;", id)
         .execute(pool)
         .await;
@@ -22,11 +22,11 @@ async fn remove_external_token(pool: &SqlitePool, id: i64) -> Result<i64, TokenR
         return Err(TokenRemovalError("Could not remove the token from the database".to_string()));
     }
 
-    Ok(id)
+    Ok(id.clone())
 }
 
-pub async fn delete_external_token(Extension(pool): Extension<SqlitePool>, Path(id): Path<i64>) -> Result<Json<DeleteTokenResponse>, Json<TokenRemovalError>> {
-    let result = remove_external_token(&pool, id).await;
+pub async fn delete_external_token(Extension(pool): Extension<SqlitePool>, Path(id): Path<String>) -> Result<Json<DeleteTokenResponse>, Json<TokenRemovalError>> {
+    let result = remove_external_token(&pool, &id).await;
 
     if result.is_err() {
         return Err(Json(result.unwrap_err()));
@@ -47,9 +47,11 @@ async fn add_external_token(
     pool: &SqlitePool,
     data: CreateToken,
 ) -> Result<Credential, CredentialCreationError> {
+    let id = gen::id();
     match sqlx::query_as!(
         Credential,
-        "INSERT INTO credentials (name, token) VALUES (?, ?) RETURNING *;",
+        "INSERT INTO credentials (id, name, token) VALUES (?, ?, ?) RETURNING *;",
+        id,
         data.name,
         data.token
     )
@@ -78,7 +80,7 @@ struct NewCredentialDto {
 
 #[derive(Serialize)]
 struct Credential {
-    id: i64,
+    id: String,
     name: String,
     token: String,
 }

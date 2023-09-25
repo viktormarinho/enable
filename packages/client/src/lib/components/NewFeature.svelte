@@ -6,7 +6,7 @@ import { clickOutside } from "../util/clickOutside";
   import Input from "./Input.svelte";
   import Portal from "./Portal.svelte";
 
-    export let projectId: number;
+    export let projectId: string;
     export let projectName: string;
     
     let createFeatureData = {
