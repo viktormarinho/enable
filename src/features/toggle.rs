@@ -1,4 +1,4 @@
-use super::all::Feature;
+use crate::models::{Feature, feature::EnvironmentFeature};
 use axum::{Extension, Json, response::IntoResponse, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -34,7 +34,7 @@ pub async fn toggle(
     Extension(pool): Extension<SqlitePool>,
     axum::extract::Json(data): Json<ToggleFeatureDto>,
 ) -> Result<Json<ToggleFeatureResponse>, ToggleFeatureErr> {
-    let feature = match sqlx::query_as!(Feature, "SELECT * FROM feature WHERE id = ?;", data.id)
+    let feature = match sqlx::query_as!(EnvironmentFeature, "SELECT * FROM environment_feature WHERE id = ?;", data.id)
         .fetch_one(&pool)
         .await {
             Ok(feat) => feat,
@@ -45,7 +45,7 @@ pub async fn toggle(
 
     let new_state = !feature.active;
 
-    let feature = sqlx::query_as!(Feature, "UPDATE feature SET active = ? WHERE id = ? RETURNING *;", new_state, data.id)
+    let feature = sqlx::query_as!(EnvironmentFeature, "UPDATE environment_feature SET active = ? WHERE id = ? RETURNING *;", new_state, data.id)
         .fetch_one(&pool)
         .await
         .unwrap();

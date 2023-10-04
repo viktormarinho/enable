@@ -3,19 +3,11 @@ use serde::Serialize;
 use serde_json::json;
 use sqlx::SqlitePool;
 
-use crate::projects::create::Project;
-
-#[derive(Serialize)]
-pub struct Feature {
-    pub id: String,
-    pub active: bool,
-    pub project_id: String,
-}
+use crate::models::feature::EnvironmentFeature;
 
 #[derive(Serialize)]
 pub struct AllFeaturesResponse {
-    features: Vec<Feature>,
-    project: Project,
+    features: Vec<EnvironmentFeature>,
 }
 
 pub enum AllFeaturesErr {
@@ -37,34 +29,34 @@ impl IntoResponse for AllFeaturesErr {
 
 pub async fn fetch_all_features(
     pool: &SqlitePool,
-    project_id: &String,
-) -> Result<Vec<Feature>, AllFeaturesErr> {
-    let result = sqlx::query_as!(
-        Feature,
-        "SELECT * FROM feature WHERE project_id = ?",
-        project_id
+    env_id: &String,
+) -> Result<Vec<EnvironmentFeature>, AllFeaturesErr> {
+    let features = sqlx::query_as!(
+        EnvironmentFeature,
+        r#"
+            SELECT *
+            FROM environment_feature
+            WHERE environment_id = ?;
+        "#,
+        env_id,
     )
     .fetch_all(pool)
     .await;
 
-    if result.is_err() {
+    if features.is_err() {
         return Err(AllFeaturesErr::CouldNotFetchFromDatabase);
     }
 
-    Ok(result.unwrap())
+    Ok(features.unwrap())
 }
 
 pub async fn all(
     Extension(pool): Extension<SqlitePool>,
-    Path(project_id): Path<String>,
+    Path(env_id): Path<String>,
 ) -> Result<(StatusCode, Json<AllFeaturesResponse>), AllFeaturesErr> {
-    let features = fetch_all_features(&pool, &project_id).await?;
-    let project = sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", project_id)
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    let features = fetch_all_features(&pool, &env_id).await?;
 
-    Ok((StatusCode::OK, Json(AllFeaturesResponse { features, project })))
+    Ok((StatusCode::OK, Json(AllFeaturesResponse { features })))
 }
 
 mod tests {
@@ -73,7 +65,7 @@ mod tests {
     async fn fetch_all_features_work() {
         use crate::{db::get_pool, features::all::fetch_all_features};
         let pool = get_pool().await;
-        let features = fetch_all_features(&pool, &String::from("kekeke")).await;
+        let features = fetch_all_features(&pool,  &String::from("dev")).await;
         assert!(features.is_ok());
     }
 }

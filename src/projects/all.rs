@@ -4,7 +4,7 @@ use serde_json::json;
 use sqlx::SqlitePool;
 
 #[derive(Serialize)]
-pub struct Project {
+pub struct ProjectWithCount {
     pub id: Option<String>,
     pub name: String,
     pub user_id: String,
@@ -30,7 +30,7 @@ impl IntoResponse for AllProjectsErr {
 
 #[derive(Serialize)]
 pub struct AllProjectsResponse {
-    pub projects: Vec<Project>,
+    pub projects: Vec<ProjectWithCount>,
 }
 
 pub async fn all(
@@ -41,9 +41,9 @@ pub async fn all(
     Ok((StatusCode::OK, Json(AllProjectsResponse { projects })))
 }
 
-pub async fn fetch_all_projects(pool: &SqlitePool) -> Result<Vec<Project>, AllProjectsErr> {
+pub async fn fetch_all_projects(pool: &SqlitePool) -> Result<Vec<ProjectWithCount>, AllProjectsErr> {
     let result = sqlx::query_as!(
-        Project,
+        ProjectWithCount,
         r#"SELECT 
             id,
             name,

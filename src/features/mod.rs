@@ -8,7 +8,7 @@ pub mod toggle;
 
 pub fn features() -> Router {
     Router::new()
-        .route("/:project_id", get(all::all))
+        .route("/:env_id", get(all::all))
         .route("/", post(create::new))
         .route("/toggle", post(toggle::toggle))
         .layer(middleware::from_fn(require_auth))

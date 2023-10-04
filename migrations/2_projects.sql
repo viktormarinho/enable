@@ -16,7 +16,6 @@ create table if not exists environment (
 
 create table if not exists feature (
   id text primary key not null, -- not and uuid yet.
-  active boolean not null,
 
   project_id text not null,
   foreign key(project_id) references project(id)

@@ -4,18 +4,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::SqlitePool;
 
-use crate::{users::load_user, gen};
+use crate::{users::load_user, gen, models::{Project, Environment}};
 
 #[derive(Deserialize)]
 pub struct CreateProjectDto {
     pub name: String,
-}
-
-#[derive(Serialize)]
-pub struct Project {
-    pub id: Option<String>,
-    pub name: String,
-    pub user_id: String,
 }
 
 #[derive(Serialize)]
@@ -24,7 +17,8 @@ pub struct CreateProjectResponse {
 }
 
 pub enum CreateProjectErr {
-    InvalidProjectName
+    InvalidProjectName,
+    CouldNotInsertOnDatabase,
 }
 
 impl CreateProjectDto {
@@ -39,13 +33,27 @@ impl CreateProjectDto {
 impl IntoResponse for CreateProjectErr {
     fn into_response(self) -> axum::response::Response {
         let (status, message, fields) = match self {
-            CreateProjectErr::InvalidProjectName => (StatusCode::BAD_REQUEST, "Invalid project name, use at least 3 letters", vec!["name"])
+            CreateProjectErr::InvalidProjectName => (StatusCode::BAD_REQUEST, "Invalid project name, use at least 3 letters", vec!["name"]),
+            CreateProjectErr::CouldNotInsertOnDatabase => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error: Could not create the project", vec![])
         };
         let body = Json(json!({
             "error": message, "fields": fields
         }));
         (status, body).into_response()
     }
+}
+
+async fn create_default_envs(pool: &SqlitePool, project_id: String) -> Result<(), CreateProjectErr> {
+    let dev_env = Environment::new(pool, "dev", &project_id);
+    let prod_env = Environment::new(pool, "prod", &project_id);
+
+    let (dev_env, prod_env) = tokio::join!(dev_env, prod_env);
+
+    if dev_env.is_err() || prod_env.is_err() {
+        return Err(CreateProjectErr::CouldNotInsertOnDatabase);
+    }
+
+    Ok(())
 }
 
 pub async fn new(
@@ -65,7 +73,9 @@ pub async fn new(
     )
     .fetch_one(&pool)
     .await
-    .unwrap();
+    .map_err(|_| CreateProjectErr::CouldNotInsertOnDatabase)?;
+
+    create_default_envs(&pool, project.id.clone().unwrap()).await?;
 
     Ok(Json(CreateProjectResponse { project }))
 }
