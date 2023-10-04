@@ -3,6 +3,7 @@
   import ApiButton from "./ApiButton.svelte";
   import ApiDefinitions from "./ApiDefinitions.svelte";
   import CopyButton from "./CopyButton.svelte";
+  import DeleteButton from "./DeleteButton.svelte";
 
   export let feature: EnvironmentFeature;
 
@@ -14,6 +15,7 @@
         <CopyButton text={feature.feature_id} />
         <span class="name">{feature.feature_id}</span>
         <ApiButton on:click={() => (showApiDefs = !showApiDefs)} selected={showApiDefs}/>
+        <DeleteButton label={`${feature.feature_id} from all environments`} on:confirm />
         <span class="tag" class:tag-active={feature.active}
           >{feature.active ? "Active" : "Disabled"}</span
         >

@@ -22,11 +22,26 @@
       return f;
     });
   }
+
+  async function deleteFeature(feat: EnvironmentFeature) {
+    const res = await fetch(`/api/features`, {
+      method: "DELETE",
+      body: JSON.stringify(feat),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!res.ok) return;
+
+    features = features.filter(f => f.id !== feat.id);
+  }
+
 </script>
 
 <div class="feature-list">
   {#each features as feature}
-    <FeatureComponent feature={feature} on:click={() => toggleFeature(feature.id)} />
+    <FeatureComponent feature={feature} on:click={() => toggleFeature(feature.id)} on:confirm={() => deleteFeature(feature)}/>
   {/each}
 </div>
 
