@@ -1,8 +1,8 @@
-import { Feature } from "./feature";
+import { Environment } from "./environment";
 
 export type ProjectPageData = {
   project: {
     name: string;
   };
-  features: Feature[];
+  envs: Environment[]; 
 };

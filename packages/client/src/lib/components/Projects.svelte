@@ -28,8 +28,8 @@
       on:click={() => push(`#/admin/project/${project.id}`)}
       class="project"
     >
-      <span><Folder /> {project.name}</span>
-      <span>{resolveLabel(project.feature_count)}</span>
+      <span class="title"><span><Folder /></span> <h4>{project.name}</h4></span>
+      <span class="label">{resolveLabel(project.feature_count)}</span>
     </button>
   {/each}
 </div>
@@ -54,6 +54,7 @@
     justify-content: space-between;
     padding: 20px 10px;
     align-items: center;
+    gap: 1rem;
   }
   .project:hover {
     background-color: whitesmoke;
@@ -65,6 +66,12 @@
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 1rem;
+  }
+  .title > h4 {
+    margin: 0;
+  }
+  .label {
+    flex-shrink: 0;
   }
 </style>

@@ -50,7 +50,7 @@
     <div use:clickOutside on:click_outside={() => (open = false)} class="hidden" class:open={open}>
         <form class="modal-content" on:submit={createProject}>
             <span>New project</span>
-            <Input type="text" bind:value={createProjectData.name} placeholder="Project name" error={createProjectErrors.name}>
+            <Input maxLength="35" type="text" bind:value={createProjectData.name} placeholder="Project name" error={createProjectErrors.name}>
                 <Tag/>
             </Input>
             <Button loading={loading} text="Create">

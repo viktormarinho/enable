@@ -1,18 +1,18 @@
 <script lang=ts>
-  import { Feature } from "../types/feature";
+  import { EnvironmentFeature } from "../types/feature";
   import ApiButton from "./ApiButton.svelte";
   import ApiDefinitions from "./ApiDefinitions.svelte";
   import CopyButton from "./CopyButton.svelte";
 
-  export let feature: Feature;
+  export let feature: EnvironmentFeature;
 
   let showApiDefs = false;
 </script>
 
 <div class="feature-container">
   <div class="feature">
-        <CopyButton text={feature.id} />
-        <span class="name">{feature.id}</span>
+        <CopyButton text={feature.feature_id} />
+        <span class="name">{feature.feature_id}</span>
         <ApiButton on:click={() => (showApiDefs = !showApiDefs)} selected={showApiDefs}/>
         <span class="tag" class:tag-active={feature.active}
           >{feature.active ? "Active" : "Disabled"}</span
@@ -26,7 +26,7 @@
         </button>
       </div>
       <div class:show={showApiDefs} class="no-h">
-        <ApiDefinitions name={feature.id} active={feature.active}/>
+        <ApiDefinitions name={feature.feature_id} active={feature.active}/>
       </div>
 </div>
 

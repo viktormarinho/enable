@@ -67,6 +67,7 @@
     border-radius: 8px;
     top: 8px;
     background-color: white;
+    z-index: 10;
     display: flex;
     box-shadow: var(--shadow);
     flex-direction: column;

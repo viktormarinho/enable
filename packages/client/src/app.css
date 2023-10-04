@@ -94,12 +94,28 @@ h1 {
   padding: 8px;
   cursor: pointer;
 }
+
 .btn-secondary:hover {
   background-color: var(--hover-bg);
 }
+
 .btn-secondary > span {
   color: var(--sec-content);
   font-size: 16px;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-weight: 500;
+}
+
+select {
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  color: var(--sec-content);
+}
+
+select:hover {
+  background-color: var(--hover-bg);
 }

@@ -56,6 +56,7 @@
 
 <form on:submit={createCredential}>
   <Input
+    maxLength="35"
     bind:value={newCredentialName}
     error={newCredentialNameError}
     placeholder="Credential name"
@@ -71,5 +72,8 @@
   form {
     display: flex;
     gap: 8px;
+  }
+  form:last-child {
+    flex-grow: 0;
   }
 </style>

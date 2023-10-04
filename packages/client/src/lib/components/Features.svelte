@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Feature } from "../types/feature";
+  import { EnvironmentFeature } from "../types/feature";
   import FeatureComponent from './Feature.svelte';
 
-  export let features: (Feature & { api_defs?: boolean })[] = [];
+  export let features: (EnvironmentFeature & { api_defs?: boolean })[] = [];
 
   async function toggleFeature(id: string) {
     const res = await fetch("/api/features/toggle", {

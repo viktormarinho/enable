@@ -6,6 +6,7 @@
     export let value = '';
     export let help = '';
     export let error = '';
+    export let maxLength = '';
 
     function typeAction(node) {
         node.type = type;
@@ -16,7 +17,7 @@
     <div class="container" class:error={error.length}>
         <label class="control">
             <slot></slot>
-            <input use:typeAction placeholder={placeholder} bind:value={value} />
+            <input use:typeAction placeholder={placeholder} bind:value={value} maxlength={maxLength} />
         </label>
         {#if error.length}
             <div class="error-p">

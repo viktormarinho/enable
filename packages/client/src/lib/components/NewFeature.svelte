@@ -1,7 +1,7 @@
 <script lang=ts>
   import { errors } from "../errors";
   import EnableIcon from "../icons/Enable.svelte";
-import { clickOutside } from "../util/clickOutside";
+  import { clickOutside } from "../util/clickOutside";
   import Button from "./Button.svelte";
   import Input from "./Input.svelte";
   import Portal from "./Portal.svelte";
@@ -49,14 +49,14 @@ import { clickOutside } from "../util/clickOutside";
 </script>
 
 <button class="btn-secondary" on:click={() => (open = true)}>
-  <span> Create feature + </span>
+  <span> Feature </span>
 </button>
 {#if open}
     <Portal>
         <div use:clickOutside on:click_outside={() => (open = false)} class="hidden" class:open={open}>
             <form class="modal-content" on:submit={createFeature}>
                 <span>New feature</span>
-                <Input type="text" bind:value={createFeatureData.name} placeholder="Feature name" error={''}>
+                <Input maxLength="35" type="text" bind:value={createFeatureData.name} placeholder="Feature name" error={createFeatureErrors.name}>
                     <EnableIcon width='32' height='32'/>
                 </Input>
                 <p>Feature identifier: <strong>{displayName}</strong></p>
@@ -99,5 +99,9 @@ import { clickOutside } from "../util/clickOutside";
   }
   .modal-content > p {
     font-size: 12px;
+  }
+
+  strong {
+    overflow-wrap: break-word;
   }
 </style>
