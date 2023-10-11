@@ -39,6 +39,7 @@ async fn main() {
         .nest_service("/features", enable::features::features())
         .nest_service("/projects", enable::projects::projects())
         .nest_service("/health", enable::health::health())
+        .nest_service("/environment", enable::environment::environment())
         .layer(session_layer);
 
     let app = Router::new()

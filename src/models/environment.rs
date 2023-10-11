@@ -2,7 +2,7 @@ pub use super::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct Environment {
-    pub id: String,
+    pub id: Option<String>,
     pub name: String,
     pub project_id: String
 }
@@ -28,7 +28,7 @@ impl Environment {
         .await
     }
 
-    pub async fn connect_feature(self, pool: &SqlitePool, feature_id: String) -> Result<String, sqlx::Error> {
+    pub async fn connect_feature(&self, pool: &SqlitePool, feature_id: String) -> Result<String, sqlx::Error> {
         let id = gen::id();
         sqlx::query!(
             "INSERT INTO environment_feature (id, environment_id, feature_id, active) VALUES (?, ?, ?, ?) RETURNING id",

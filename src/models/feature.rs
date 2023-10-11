@@ -6,6 +6,19 @@ pub struct Feature {
     pub project_id: String,
 }
 
+impl Feature {
+    pub async fn new(id: String, project_id: String, pool: &SqlitePool) -> Result<Feature, sqlx::Error> {   
+        sqlx::query_as!(
+            Feature,
+            "INSERT INTO feature (id, project_id) VALUES (?, ?) RETURNING *",
+            id,
+            project_id
+        )
+        .fetch_one(pool)
+        .await
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct EnvironmentFeature {
     pub id: String,
@@ -27,7 +40,6 @@ impl EnvironmentFeature {
             .execute(pool)
             .await
             .map(|_| ())?;
-        // can check for number of rows affected! if it is more than 1 something is wrong...
 
         Ok(self)
     }

@@ -9,6 +9,7 @@
     import { Environment } from "../types/environment";
     import { EnvironmentFeature } from "../types/feature";
     import Plus from "../icons/Plus.svelte";
+    import NewEnvironment from "../components/NewEnvironment.svelte";
 
     export let params = {
         id: ''
@@ -71,9 +72,7 @@
                     </button>
                     <div class="new-options">
                         <NewFeature projectId={params.id} projectName={meta.project.name} />
-                        <button class="btn-secondary">
-                            <span> Environment </span>
-                        </button>
+                        <NewEnvironment projectId={params.id} projectName={meta.project.name} />
                     </div>
                 </div>
             </div>

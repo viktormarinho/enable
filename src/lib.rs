@@ -7,6 +7,7 @@ pub mod db;
 
 pub mod features;
 pub mod projects;
+pub mod environment;
 pub mod external;
 
 pub mod models;

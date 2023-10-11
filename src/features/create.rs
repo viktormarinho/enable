@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::SqlitePool;
 
-use crate::models::Project;
+use crate::models::{Project, Feature};
 
 #[derive(Serialize)]
 pub struct NewFeatureResponse {
@@ -90,16 +90,11 @@ impl IntoResponse for CreateFeatureErr {
 pub async fn create(pool: &SqlitePool, data: CreateFeatureDto) -> Result<CreateFeatureOk, CreateFeatureErr> {
     let (feature_id, project_id) = data.validate(pool).await?;
 
-    let feature = sqlx::query!(
-        "INSERT INTO feature (id, project_id) VALUES (?, ?) RETURNING id",
-        feature_id,
-        project_id
-    )
-    .fetch_one(pool)
-    .await
-    .unwrap();
+    let feature = Feature::new(feature_id.clone(), project_id.clone(), pool)
+        .await
+        .unwrap();
 
-    let envs = Project::load_envs(project_id, pool)
+    let envs = Project::envs(project_id, pool)
         .await
         .unwrap();
 

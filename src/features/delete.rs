@@ -23,9 +23,6 @@ impl IntoResponse for DeleteFeatureError {
 pub async fn delete(Extension(pool): Extension<SqlitePool>, Json(feature): Json<EnvironmentFeature>) -> Result<Json<EnvironmentFeature>, DeleteFeatureError> {
     feature.delete_in_all_envs(&pool)
         .await
-        .map_err(|e| {
-            println!("error: {e}");
-            DeleteFeatureError::CouldNotDeleteFromDatabase
-        })
+        .map_err(|_| DeleteFeatureError::CouldNotDeleteFromDatabase)
         .map(|feat| Json(feat))
 } 
