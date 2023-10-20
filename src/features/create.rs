@@ -33,16 +33,11 @@ impl CreateFeatureDto {
             return Err(CreateFeatureErr::FeatureNameTooShort)
         }
             
-        let project = sqlx::query!("SELECT * FROM project WHERE id = ?", self.project_id)
+        let project = sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", self.project_id)
             .fetch_optional(pool)
             .await
-            .unwrap();
-
-        if project.is_none() {
-            return Err(CreateFeatureErr::ProjectDoesNotExist);
-        }
-
-        let project = project.unwrap();
+            .map_err(|_| CreateFeatureErr::ProjectDoesNotExist)?
+            .ok_or_else(|| CreateFeatureErr::ProjectDoesNotExist)?;
 
         let feature_id = format!(
             "{}_{}",
@@ -50,16 +45,12 @@ impl CreateFeatureDto {
             &self.name
         ).replace(" ", "_").to_lowercase();
 
-        let existing_feature = sqlx::query!("SELECT * FROM feature WHERE id = ?", feature_id)
+        sqlx::query!("SELECT * FROM feature WHERE id = ?", feature_id)
             .fetch_optional(pool)
             .await
-            .unwrap();
+            .map_err(|_| CreateFeatureErr::FeatureAlreadyExists)?;
 
-        if existing_feature.is_some() {
-            return Err(CreateFeatureErr::FeatureAlreadyExists);
-        }
-
-        Ok((feature_id, project.id))
+        Ok((feature_id, self.project_id.clone()))
     }
 }
 
@@ -70,7 +61,8 @@ pub struct CreateFeatureOk {
 pub enum CreateFeatureErr {
     ProjectDoesNotExist,
     FeatureAlreadyExists,
-    FeatureNameTooShort
+    FeatureNameTooShort,
+    CouldNotSaveChanges
 }
 
 impl IntoResponse for CreateFeatureErr {
@@ -78,7 +70,8 @@ impl IntoResponse for CreateFeatureErr {
         let (status, error_message, fields) = match self {
             CreateFeatureErr::FeatureAlreadyExists => (StatusCode::BAD_REQUEST, "Feature already exists", vec!["name"]),
             CreateFeatureErr::ProjectDoesNotExist => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error: The project does not exist", vec![]),
-            CreateFeatureErr::FeatureNameTooShort => (StatusCode::BAD_REQUEST, "Feature name is too short", vec!["name"])
+            CreateFeatureErr::FeatureNameTooShort => (StatusCode::BAD_REQUEST, "Feature name is too short", vec!["name"]),
+            CreateFeatureErr::CouldNotSaveChanges => (StatusCode::INTERNAL_SERVER_ERROR, "Could not save changes to the database", vec![])
         };
         let body = Json(json!({
             "error": error_message, "fields": fields
@@ -93,16 +86,16 @@ pub async fn create(pool: &SqlitePool, data: CreateFeatureDto) -> Result<CreateF
     let feature = Feature::new(feature_id.clone(), project_id.clone())
         .save(pool)
         .await
-        .unwrap();
+        .map_err(|_| CreateFeatureErr::CouldNotSaveChanges)?;
 
     let envs = Project::envs(project_id, pool)
         .await
-        .unwrap();
+        .map_err(|_| CreateFeatureErr::CouldNotSaveChanges)?;
 
     for env in envs {
         env.connect_feature(pool, feature_id.clone())
             .await
-            .unwrap();
+            .map_err(|_| CreateFeatureErr::CouldNotSaveChanges)?;
     }
 
     return Ok(CreateFeatureOk { 

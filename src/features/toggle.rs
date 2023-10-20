@@ -45,7 +45,7 @@ pub async fn toggle(
     let feature = feature
         .toggle(&pool)
         .await
-        .unwrap();
+        .map_err(|_| ToggleFeatureErr::CouldNotFetchFromDatabase)?;
 
     Ok(Json(ToggleFeatureResponse { new_state: feature.active }))
 }
