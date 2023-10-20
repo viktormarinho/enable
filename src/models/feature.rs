@@ -35,6 +35,24 @@ pub struct EnvironmentFeature {
 }
 
 impl EnvironmentFeature {
+    pub async fn get(id: String, pool: &SqlitePool) -> Result<EnvironmentFeature, sqlx::Error> {
+        sqlx::query_as!(EnvironmentFeature, "SELECT * FROM environment_feature WHERE id = ?;", id)
+        .fetch_one(pool)
+        .await
+    }
+
+    pub async fn toggle(&self, pool: &SqlitePool) -> Result<EnvironmentFeature, sqlx::Error> {
+        let new_state = !self.active;
+        sqlx::query_as!(
+            EnvironmentFeature, 
+            "UPDATE environment_feature SET active = ? WHERE id = ? RETURNING *;", 
+            new_state, 
+            self.id
+        )
+        .fetch_one(pool)
+        .await
+    }
+
     pub async fn delete_in_all_envs(self, pool: &SqlitePool) -> Result<Self, sqlx::Error> {
         let fid = self.feature_id.clone();
         sqlx::query!("DELETE FROM environment_feature WHERE feature_id = ?", fid)

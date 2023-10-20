@@ -34,19 +34,16 @@ pub async fn toggle(
     Extension(pool): Extension<SqlitePool>,
     axum::extract::Json(data): Json<ToggleFeatureDto>,
 ) -> Result<Json<ToggleFeatureResponse>, ToggleFeatureErr> {
-    let feature = match sqlx::query_as!(EnvironmentFeature, "SELECT * FROM environment_feature WHERE id = ?;", data.id)
-        .fetch_one(&pool)
-        .await {
-            Ok(feat) => feat,
-            Err(_) => {
-                return Err(ToggleFeatureErr::CouldNotFetchFromDatabase);
-            }
-        };
+    let feature = match EnvironmentFeature::get(data.id, &pool)
+    .await {
+        Ok(feat) => feat,
+        Err(_) => {
+            return Err(ToggleFeatureErr::CouldNotFetchFromDatabase);
+        }
+    };
 
-    let new_state = !feature.active;
-
-    let feature = sqlx::query_as!(EnvironmentFeature, "UPDATE environment_feature SET active = ? WHERE id = ? RETURNING *;", new_state, data.id)
-        .fetch_one(&pool)
+    let feature = feature
+        .toggle(&pool)
         .await
         .unwrap();
 
