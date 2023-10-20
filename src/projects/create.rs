@@ -44,10 +44,8 @@ impl IntoResponse for CreateProjectErr {
 }
 
 async fn create_default_envs(pool: &SqlitePool, project_id: String) -> Result<(), CreateProjectErr> {
-    let dev_env = Environment::new(pool, "dev", &project_id);
-    let prod_env = Environment::new(pool, "prod", &project_id);
-
-    let (dev_env, prod_env) = tokio::join!(dev_env, prod_env);
+    let dev_env = Environment::new("dev", project_id.clone()).save(pool).await;
+    let prod_env = Environment::new("prod", project_id).save(pool).await;
 
     if dev_env.is_err() || prod_env.is_err() {
         return Err(CreateProjectErr::CouldNotInsertOnDatabase);
