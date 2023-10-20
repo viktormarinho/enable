@@ -8,6 +8,27 @@ pub struct Project {
 }
 
 impl Project {
+    pub fn new(name: String, user_id: String) -> Project {
+        let id = Some(gen::id());
+        Project {
+            name,
+            user_id,
+            id
+        }
+    }
+
+    pub async fn save(&self, pool: &SqlitePool) -> Result<Project, sqlx::Error> {
+        sqlx::query_as!(
+            Project,
+            "INSERT INTO project (name, user_id, id) VALUES (?, ?, ?) RETURNING *",
+            self.name,
+            self.user_id,
+            self.id
+        )
+        .fetch_one(pool)
+        .await
+    }
+
     pub async fn get(project_id: String, pool: &SqlitePool) -> Result<Project, sqlx::Error> {
         sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", project_id)
         .fetch_one(pool)
