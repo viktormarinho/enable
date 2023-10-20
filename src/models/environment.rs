@@ -8,9 +8,17 @@ pub struct Environment {
 }
 
 impl Environment {
-    pub async fn new(pool: &SqlitePool, name: impl Into<String>, project_id: &String) -> Result<Environment, sqlx::Error> {
-        let id = gen::id();
+    pub fn new(name: impl Into<String>, project_id: String) -> Environment {
+        let id = Some(gen::id());
         let name: String = name.into();
+        Environment { 
+            id, 
+            name, 
+            project_id
+        }
+    }
+
+    pub async fn save(&self, pool: &SqlitePool) -> Result<Environment, sqlx::Error> {
         sqlx::query_as!(
             Environment,
             r#"
@@ -20,9 +28,9 @@ impl Environment {
                 (?, ?, ?)
             RETURNING *;
             "#,
-            id,
-            name,
-            project_id,
+            self.id,
+            self.name,
+            self.project_id,
         )
         .fetch_one(pool)
         .await

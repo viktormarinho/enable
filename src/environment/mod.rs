@@ -28,7 +28,8 @@ mod create {
         Extension(pool): Extension<SqlitePool>,
         Json(data): Json<Environment>
     ) -> Result<Json<Environment>, CreateEnvironmentError> {
-        let env = Environment::new(&pool, data.name, &data.project_id)
+        let env = Environment::new(data.name, data.project_id.clone())
+            .save(&pool)
             .await
             .map_err(|_| CreateEnvironmentError::CouldNotInsertInDatabase)?;
 
