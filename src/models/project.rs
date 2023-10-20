@@ -8,6 +8,12 @@ pub struct Project {
 }
 
 impl Project {
+    pub async fn get(project_id: String, pool: &SqlitePool) -> Result<Project, sqlx::Error> {
+        sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", project_id)
+        .fetch_one(pool)
+        .await
+    }
+
     pub async fn envs(project_id: String, pool: &SqlitePool) -> Result<Vec<Environment>, sqlx::Error> {
         sqlx::query_as!(
             Environment,

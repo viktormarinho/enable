@@ -17,13 +17,11 @@ pub enum MetadataErr {
 }
 
 pub async fn meta(Extension(pool): Extension<SqlitePool>, Path(project_id): Path<String>) -> Result<Json<ProjectMeta>, Json<MetadataErr>> {
-    let project = sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", project_id)
-        .fetch_one(&pool)
+    let project = Project::get(project_id.clone(), &pool)
         .await
         .map_err(|_| Json(MetadataErr::CouldNotFetchFromDatabase))?;
 
-    let envs = sqlx::query_as!(Environment, "SELECT * FROM environment WHERE project_id = ?", project_id)
-        .fetch_all(&pool)
+    let envs = Project::envs(project_id, &pool)
         .await
         .map_err(|_| Json(MetadataErr::CouldNotFetchFromDatabase))?;
 
