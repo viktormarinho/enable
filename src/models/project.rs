@@ -35,6 +35,7 @@ impl Project {
         .await
     }
 
+    /// Returns all envs of the given project
     pub async fn envs(project_id: String, pool: &SqlitePool) -> Result<Vec<Environment>, sqlx::Error> {
         sqlx::query_as!(
             Environment,
@@ -45,6 +46,7 @@ impl Project {
         .await
     }
 
+    /// Returns all features of the given project
     pub async fn features(project_id: String, pool: &SqlitePool) -> Result<Vec<Feature>, sqlx::Error> {
         sqlx::query_as!(
             Feature,

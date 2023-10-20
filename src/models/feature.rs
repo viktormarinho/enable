@@ -41,6 +41,20 @@ impl EnvironmentFeature {
         .await
     }
 
+    pub async fn get_by_environment_id(env_id: String, pool: &SqlitePool) -> Result<Vec<EnvironmentFeature>, sqlx::Error> {
+        sqlx::query_as!(
+            EnvironmentFeature,
+            r#"
+                SELECT *
+                FROM environment_feature
+                WHERE environment_id = ?;
+            "#,
+            env_id,
+        )
+        .fetch_all(pool)
+        .await
+    }
+
     pub async fn toggle(&self, pool: &SqlitePool) -> Result<EnvironmentFeature, sqlx::Error> {
         let new_state = !self.active;
         sqlx::query_as!(
