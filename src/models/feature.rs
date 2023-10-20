@@ -7,12 +7,19 @@ pub struct Feature {
 }
 
 impl Feature {
-    pub async fn new(id: String, project_id: String, pool: &SqlitePool) -> Result<Feature, sqlx::Error> {   
+    pub fn new(id: String, project_id: String) -> Feature {   
+        Feature {
+            id,
+            project_id
+        }
+    }
+
+    pub async fn save(&self, pool: &SqlitePool) -> Result<Feature, sqlx::Error> {
         sqlx::query_as!(
             Feature,
             "INSERT INTO feature (id, project_id) VALUES (?, ?) RETURNING *",
-            id,
-            project_id
+            self.id,
+            self.project_id
         )
         .fetch_one(pool)
         .await

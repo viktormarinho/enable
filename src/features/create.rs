@@ -90,7 +90,8 @@ impl IntoResponse for CreateFeatureErr {
 pub async fn create(pool: &SqlitePool, data: CreateFeatureDto) -> Result<CreateFeatureOk, CreateFeatureErr> {
     let (feature_id, project_id) = data.validate(pool).await?;
 
-    let feature = Feature::new(feature_id.clone(), project_id.clone(), pool)
+    let feature = Feature::new(feature_id.clone(), project_id.clone())
+        .save(pool)
         .await
         .unwrap();
 
