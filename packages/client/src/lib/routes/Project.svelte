@@ -6,10 +6,12 @@
     import Features from "../components/Features.svelte";
     import BackToProjects from "../components/BackToProjects.svelte";
     import Adjustments from "../icons/Adjustments.svelte";
+    import EnvironmentIcon from "../icons/Environment.svelte";
     import { Environment } from "../types/environment";
     import { EnvironmentFeature } from "../types/feature";
     import Plus from "../icons/Plus.svelte";
     import NewEnvironment from "../components/NewEnvironment.svelte";
+    import Spinner from "../icons/Spinner.svelte";
 
     export let params = {
         id: ''
@@ -25,21 +27,27 @@
     let features: EnvironmentFeature[] = [];
     let selectedEnv: Environment | null = null;
 
+    let loading = false;
+
     onMount(async () => {
+        loading = true;
         const metaRes = await fetch(`/api/projects/meta/${params.id}`);
         meta = await metaRes.json();
         selectedEnv = meta.envs[0];
         const envId = selectedEnv?.id; // Check for no environments or maybe do not let user delete last env
         const res = await fetch(`/api/features/${envId}`);
         features = (await res.json()).features;
+        loading = false;
     });
 
-    async function loadCurrentEnvFeatures(e: any) {
-        selectedEnv = meta.envs.find(env => env.id === e.target.value);
+    async function loadCurrentEnvFeatures(envId: string) {
+        selectedEnv = meta.envs.find(env => env.id === envId);
         if (!selectedEnv) return;
+        loading = true;
 
         const res = await fetch(`/api/features/${selectedEnv.id}`);
         features = (await res.json()).features;
+        loading = false;
     }
 </script>
 
@@ -54,11 +62,21 @@
                     <span>
                         Change environment
                     </span>
-                    <select on:change={loadCurrentEnvFeatures}>
-                        {#each meta.envs as env}
-                            <option value={env.id}>{env.name}</option>
-                        {/each}
-                    </select>
+                    <div class="relative-container">
+                        <button class="btn-secondary">
+                            <span class="bold">
+                               <EnvironmentIcon width='24' height='24'/> 
+                               <span>{selectedEnv ? selectedEnv.name : "Loading..."}</span>
+                            </span>
+                        </button>
+                        <div class="options">
+                            {#each meta.envs as env}
+                                <button class="btn-secondary" on:click={() => loadCurrentEnvFeatures(env.id)}>
+                                    <span>{env.name}</span>
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
                 </div>
                 <div class="tooltip">
                     <span>Project settings</span>
@@ -66,17 +84,22 @@
                         <Adjustments />
                     </button>
                 </div>
-                <div class="new-container">
+                <div class="relative-container">
                     <button class="btn-secondary">
                         <Plus />
                     </button>
-                    <div class="new-options">
+                    <div class="options">
                         <NewFeature projectId={params.id} projectName={meta.project.name} />
                         <NewEnvironment projectId={params.id} projectName={meta.project.name} />
                     </div>
                 </div>
             </div>
         </header>
+        {#if loading}
+        <div class="center">
+            <Spinner width='48' height='48' />
+        </div>
+        {/if}
         <Features features={features}/>
     </div>
 </div>
@@ -117,11 +140,11 @@
         opacity: 100%;
     }
 
-    .new-container {
+    .relative-container {
         position: relative;
     }
 
-    .new-container > .new-options {
+    .relative-container > .options {
         position: absolute;
         top: 120%;
         right: 0%;
@@ -138,8 +161,15 @@
         background-color: white;
     }
 
-    .new-container:hover > .new-options {
+    .relative-container:hover > .options {
         visibility: visible;
         opacity: 100%;
+    }
+
+    .center {
+        display: flex;
+        align-items: center;
+        padding: 4rem;
+        justify-content: center;
     }
 </style>
