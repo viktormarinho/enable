@@ -10,11 +10,7 @@ pub struct Project {
 impl Project {
     pub fn new(name: String, user_id: String) -> Project {
         let id = Some(gen::id());
-        Project {
-            name,
-            user_id,
-            id
-        }
+        Project { name, user_id, id }
     }
 
     pub async fn save(&self, pool: &SqlitePool) -> Result<Project, sqlx::Error> {
@@ -31,12 +27,15 @@ impl Project {
 
     pub async fn get(project_id: String, pool: &SqlitePool) -> Result<Project, sqlx::Error> {
         sqlx::query_as!(Project, "SELECT * FROM project WHERE id = ?", project_id)
-        .fetch_one(pool)
-        .await
+            .fetch_one(pool)
+            .await
     }
 
     /// Returns all envs of the given project
-    pub async fn envs(project_id: String, pool: &SqlitePool) -> Result<Vec<Environment>, sqlx::Error> {
+    pub async fn envs(
+        project_id: String,
+        pool: &SqlitePool,
+    ) -> Result<Vec<Environment>, sqlx::Error> {
         sqlx::query_as!(
             Environment,
             "SELECT * FROM environment WHERE project_id = ?;",
@@ -47,7 +46,10 @@ impl Project {
     }
 
     /// Returns all features of the given project
-    pub async fn features(project_id: String, pool: &SqlitePool) -> Result<Vec<Feature>, sqlx::Error> {
+    pub async fn features(
+        project_id: String,
+        pool: &SqlitePool,
+    ) -> Result<Vec<Feature>, sqlx::Error> {
         sqlx::query_as!(
             Feature,
             "SELECT * FROM feature WHERE project_id = ?;",
@@ -55,5 +57,11 @@ impl Project {
         )
         .fetch_all(pool)
         .await
+    }
+
+    pub async fn get_by_name(pool: &SqlitePool, name: String)-> Result<Option<Project>, sqlx::Error> {
+        sqlx::query_as!(Project, "SELECT * FROM project WHERE name = ?", name)
+            .fetch_optional(pool)
+            .await
     }
 }
