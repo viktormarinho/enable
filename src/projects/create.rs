@@ -1,10 +1,13 @@
-use axum::{extract, Extension, Json, response::IntoResponse, http::StatusCode};
+use axum::{extract, http::StatusCode, response::IntoResponse, Extension, Json};
 use axum_sessions::extractors::ReadableSession;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::SqlitePool;
 
-use crate::{users::load_user, models::{Project, Environment}};
+use crate::{
+    models::{Environment, Project},
+    users::load_user,
+};
 
 #[derive(Deserialize)]
 pub struct CreateProjectDto {
@@ -13,19 +16,28 @@ pub struct CreateProjectDto {
 
 #[derive(Serialize)]
 pub struct CreateProjectResponse {
-    project: Project
+    project: Project,
 }
 
 pub enum CreateProjectErr {
-    InvalidProjectName,
+    NameTooShort,
+    NameAlreadyTaken,
     CouldNotInsertOnDatabase,
 }
 
 impl CreateProjectDto {
-    fn validate(&self) -> Result<(), CreateProjectErr> {
+    async fn validate(&self, pool: &SqlitePool) -> Result<(), CreateProjectErr> {
         if self.name.len() < 3 {
-            return Err(CreateProjectErr::InvalidProjectName);
+            return Err(CreateProjectErr::NameTooShort);
         }
+        let project = Project::get_by_name(pool, self.name.clone())
+            .await
+            .map_err(|_| CreateProjectErr::CouldNotInsertOnDatabase)?;
+
+        if project.is_some() {
+            return Err(CreateProjectErr::NameAlreadyTaken);
+        }
+
         Ok(())
     }
 }
@@ -33,8 +45,21 @@ impl CreateProjectDto {
 impl IntoResponse for CreateProjectErr {
     fn into_response(self) -> axum::response::Response {
         let (status, message, fields) = match self {
-            CreateProjectErr::InvalidProjectName => (StatusCode::BAD_REQUEST, "Invalid project name, use at least 3 letters", vec!["name"]),
-            CreateProjectErr::CouldNotInsertOnDatabase => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error: Could not create the project", vec![])
+            CreateProjectErr::NameTooShort => (
+                StatusCode::BAD_REQUEST,
+                "Invalid project name, use at least 3 letters",
+                vec!["name"],
+            ),
+            CreateProjectErr::NameAlreadyTaken => (
+                StatusCode::BAD_REQUEST,
+                "Project name has already been taken",
+                vec!["name"],
+            ),
+            CreateProjectErr::CouldNotInsertOnDatabase => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal error: Could not create the project",
+                vec![],
+            ),
         };
         let body = Json(json!({
             "error": message, "fields": fields
@@ -43,7 +68,10 @@ impl IntoResponse for CreateProjectErr {
     }
 }
 
-async fn create_default_envs(pool: &SqlitePool, project_id: String) -> Result<(), CreateProjectErr> {
+async fn create_default_envs(
+    pool: &SqlitePool,
+    project_id: String,
+) -> Result<(), CreateProjectErr> {
     let dev_env = Environment::new("dev", project_id.clone()).save(pool).await;
     let prod_env = Environment::new("prod", project_id).save(pool).await;
 
@@ -59,7 +87,7 @@ pub async fn new(
     Extension(pool): Extension<SqlitePool>,
     extract::Json(data): Json<CreateProjectDto>,
 ) -> Result<Json<CreateProjectResponse>, CreateProjectErr> {
-    data.validate()?;
+    data.validate(&pool).await?;
     let user = load_user(session, &pool).await;
     let project = Project::new(data.name, user.id)
         .save(&pool)
